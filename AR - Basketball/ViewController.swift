@@ -20,7 +20,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.delegate = self
         
         // Show statistics such as fps and timing information
-        sceneView.showsStatistics = true
+        sceneView.showsStatistics = false
         
         // Create a new scene
         let scene = SCNScene()
@@ -49,18 +49,13 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             return
         }
         
-        // transform matrix
-        // the orientation
-        // the location of the camera
-        // we need the orientation and location to determina the position of the camera and it's at this point in which we want the ball to be placed
-        
         let cameraTransfrom = centerPoint.transform
         let cameraLocation = SCNVector3(x: cameraTransfrom.m41,y: cameraTransfrom.m42,z: cameraTransfrom.m43)
         let cameraOrientation = SCNVector3(x: -cameraTransfrom.m31,y: -cameraTransfrom.m32,z: -cameraTransfrom.m33)
         
         let cameraPosition = SCNVector3Make(cameraLocation.x + cameraOrientation.x, cameraLocation.y + cameraOrientation.y, cameraLocation.z + cameraOrientation.z)
         
-        let ball = SCNSphere(radius: 0.15)
+        let ball = SCNSphere(radius: 0.2)
         let material = SCNMaterial()
         material.diffuse.contents = UIImage(named: "basketballSkin.png")
         ball.materials = [material]
@@ -96,6 +91,39 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         backboardNode.physicsBody = physicsBody
         
         sceneView.scene.rootNode.addChildNode(backboardNode)
+        roundAction(node: backboardNode)
+    }
+    
+    func horizontalAction(node: SCNNode) {
+        let leftAction = SCNAction.move(by: SCNVector3(x: -3, y: 0, z: 0), duration: 5)
+        let rightAction = SCNAction.move(by: SCNVector3(x: 3, y: 0, z: 0), duration: 5)
+
+        let actionSequence = SCNAction.sequence([leftAction, rightAction])
+        let loopAction = SCNAction.repeatForever(actionSequence)
+
+        node.runAction(loopAction)
+    }
+    
+    func verticalAction(node: SCNNode){
+        let upAction = SCNAction.move(by: SCNVector3(x: 0,y: -2,z: 0), duration: 3)
+        let downAction = SCNAction.move(by: SCNVector3(x: 0,y: 2,z: 0), duration: 3)
+        
+        let actionSequence = SCNAction.sequence([upAction, downAction])
+        let loopAction = SCNAction.repeatForever(actionSequence)
+        
+        node.runAction(loopAction)
+    }
+    
+    func roundAction(node: SCNNode){
+        let upLeft = SCNAction.move(by: SCNVector3(x: 2,y: 2,z: 0), duration: 5)
+        let upRight = SCNAction.move(by: SCNVector3(x: 2,y: -2,z: 0), duration: 5)
+        let downRight = SCNAction.move(by: SCNVector3(x: -2,y: -2,z: 0), duration: 5)
+        let downLeft = SCNAction.move(by: SCNVector3(x: -2,y: 2,z: 0), duration: 5)
+        
+        let actionSequence = SCNAction.sequence([upLeft, upRight, downRight, downLeft])
+        let loopAction = SCNAction.repeatForever(actionSequence)
+        
+        node.runAction(loopAction)
     }
     
     override func viewWillAppear(_ animated: Bool) {
