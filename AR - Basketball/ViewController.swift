@@ -27,9 +27,15 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Set the scene to the view
         sceneView.scene = scene
+//        sceneView.pointOfView?.camera?.wantsDepthOfField = true
+//        sceneView.pointOfView?.camera?.focusDistance = 1.0
+//        sceneView.pointOfView?.camera?.fStop = 5.0
+
         
         addBackboard()
-        
+        addFloor()
+//        playBackgroundMusic()
+        addWall()
         registerGestureRecognizer()
     }
     
@@ -39,8 +45,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     @objc func handleTap(gestureRecognizer: UIGestureRecognizer){
-        // scene view to be accessed
-        // access the point of view of the scene view. the center point
         guard let sceneView = gestureRecognizer.view as? ARSCNView else {
             return
         }
@@ -55,7 +59,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         let cameraPosition = SCNVector3Make(cameraLocation.x + cameraOrientation.x, cameraLocation.y + cameraOrientation.y, cameraLocation.z + cameraOrientation.z)
         
-        let ball = SCNSphere(radius: 0.2)
+        let ball = SCNSphere(radius: 0.15)
         let material = SCNMaterial()
         material.diffuse.contents = UIImage(named: "basketballSkin.png")
         ball.materials = [material]
@@ -71,6 +75,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let forceVector:Float = 6
         ballNode.physicsBody?.applyForce(SCNVector3(x: cameraOrientation.x * forceVector, y: cameraOrientation.y * forceVector, z: cameraOrientation.z * forceVector), asImpulse: true)
         
+        playThrowSound()
         sceneView.scene.rootNode.addChildNode(ballNode)
     }
     
@@ -83,7 +88,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             return
         }
         
-        backboardNode.position = SCNVector3(x: 0, y: 0.5, z: -3)
+        backboardNode.position = SCNVector3(x: 0, y: 1.5, z: -4.5)
         
         let physicsShape = SCNPhysicsShape(node: backboardNode, options: [SCNPhysicsShape.Option.type: SCNPhysicsShape.ShapeType.concavePolyhedron])
         let physicsBody = SCNPhysicsBody(type: .static, shape: physicsShape)
@@ -91,7 +96,51 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         backboardNode.physicsBody = physicsBody
         
         sceneView.scene.rootNode.addChildNode(backboardNode)
-        roundAction(node: backboardNode)
+        verticalAction(node: backboardNode)
+    }
+    
+    func addFloor() {
+        let floor = SCNPlane(width: 25, height: 38)
+        let floorNode = SCNNode(geometry: floor)
+        
+        floorNode.eulerAngles.x = -.pi / 2
+        
+        let material = SCNMaterial()
+        material.diffuse.contents = UIImage(named: "floor.jpg")
+        
+        floor.materials = [material]
+        
+        floorNode.position = SCNVector3(0, -2, -5)
+        
+        let physicsShape = SCNPhysicsShape(geometry: floor, options: nil)
+        let physicsBody = SCNPhysicsBody(type: .static, shape: physicsShape)
+        
+        floorNode.physicsBody = physicsBody
+        
+        sceneView.scene.rootNode.addChildNode(floorNode)
+    }
+
+    func addWall() {
+        let wallWidth: CGFloat = 6.0
+        let wallHeight: CGFloat = 6.0
+        let wallDepth: CGFloat = 0.1
+        
+        let wall = SCNBox(width: wallWidth, height: wallHeight, length: wallDepth, chamferRadius: 0.0)
+        let wallNode = SCNNode(geometry: wall)
+        
+        wallNode.position = SCNVector3(0, wallHeight / 2-0.5, -5)
+        
+        let material = SCNMaterial()
+        material.diffuse.contents = UIImage(named: "wallTexture.jpeg")
+        
+        wall.materials = [material]
+        
+        let physicsShape = SCNPhysicsShape(geometry: wall, options: nil)
+        let physicsBody = SCNPhysicsBody(type: .static, shape: physicsShape)
+        
+        wallNode.physicsBody = physicsBody
+        
+        sceneView.scene.rootNode.addChildNode(wallNode)
     }
     
     func horizontalAction(node: SCNNode) {
